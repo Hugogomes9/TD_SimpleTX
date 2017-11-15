@@ -34,7 +34,7 @@ SOFTWARE.
 #include "deca_regs.h"
 #include "sleep.h"
 #include "port.h"
-static uint8 tx_msg[] = {0xC5, 0, 'D', 'E', 'C', 'A', 'W', 'A', 'V', 'E', 0, 0};
+//static uint8 tx_msg[] = {0xC5, 0, 'D', 'E', 'C', 'A', 'W', 'A', 'V', 'E', 0, 0};
 #define BLINK_FRAME_SN_IDX 1
 
 /* Inter-frame delay period, in milliseconds. */
@@ -53,55 +53,84 @@ static dwt_config_t config = {
     (1025 + 64 - 32) /* SFD timeout (preamble length + 1 + SFD length - PAC size). Used in RX only. */
 };
 
+/* Buffer to store received frame. See NOTE 1 below. */
+#define FRAME_LEN_MAX 127
+static uint8 rx_buffer[FRAME_LEN_MAX];
+
+/* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
+static uint32 status_reg = 0;
+
+/* Hold copy of frame length of frame received (if good) so that it can be examined at a debug breakpoint. */
+static uint16 frame_len = 0;
+
+/**
+ * Application entry point.
+ */
+
 int main(void)
 {
-  int i = 0;
+	/* Start with board specific hardware init. */
+	    peripherals_init();
 
-  /* Start with board specific hardware init. */
-     peripherals_init();
+	    /* Reset and initialise DW1000. See NOTE 2 below.
+	     * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
+	     * performance. */
+	    reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
+	    spi_set_rate_low();
+	    if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
+	    {
+	        while (1)
+	        { };
+	    }
+	    spi_set_rate_high();
 
-     /* Reset and initialise DW1000. See NOTE 2 below.
-      * For initialisation, DW1000 clocks must be temporarily set to crystal speed. After initialisation SPI rate can be increased for optimum
-      * performance. */
-     reset_DW1000(); /* Target specific drive of RSTn line into DW1000 low for a period. */
-     spi_set_rate_low();
-     uint32_t deviceID = dwt_readdevid();
+	    /* Configure DW1000. */
+	    dwt_configure(&config);
 
-     if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
-     {
-    	 lcd_display_str("INIT FAILED");
-         while (1)
-         	 { };
-     }
-     spi_set_rate_high();
+	    /* Loop forever receiving frames. */
+	    while (1)
+	    {
+	        int i;
 
-     /* Configure DW1000. See NOTE 3 below. */
-     dwt_configure(&config);
+	        /* TESTING BREAKPOINT LOCATION #1 */
 
-     while(1)
-     {
-    	 /* Write frame data to DW1000 and prepare transmission. See NOTE 4 below.*/
-    	         dwt_writetxdata(sizeof(tx_msg), tx_msg, 0); /* Zero offset in TX buffer. */
-    	         dwt_writetxfctrl(sizeof(tx_msg), 0, 0); /* Zero offset in TX buffer, no ranging. */
+	        /* Clear local RX buffer to avoid having leftovers from previous receptions  This is not necessary but is included here to aid reading
+	         * the RX buffer.
+	         * This is a good place to put a breakpoint. Here (after first time through the loop) the local status register will be set for last event
+	         * and if a good receive has happened the data buffer will have the data in it, and frame_len will be set to the length of the RX frame. */
+	        for (i = 0 ; i < FRAME_LEN_MAX; i++ )
+	        {
+	            rx_buffer[i] = 0;
+	        }
 
-    	         /* Start transmission. */
-    	         dwt_starttx(DWT_START_TX_IMMEDIATE);
+	        /* Activate reception immediately. See NOTE 3 below. */
+	        dwt_rxenable(DWT_START_RX_IMMEDIATE);
 
-    	         /* Poll DW1000 until TX frame sent event set. See NOTE 5 below.
-    	          * STATUS register is 5 bytes long but, as the event we are looking at is in the first byte of the register, we can use this simplest API
-    	          * function to access it.*/
-    	         while (!(dwt_read32bitreg(SYS_STATUS_ID) & SYS_STATUS_TXFRS))
-    	         { };
+	        /* Poll until a frame is properly received or an error/timeout occurs. See NOTE 4 below.
+	         * STATUS register is 5 bytes long but, as the event we are looking at is in the first byte of the register, we can use this simplest API
+	         * function to access it. */
+	        while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_ERR)))
+	        { };
 
-    	         /* Clear TX frame sent event. */
-    	         dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_TXFRS);
+	        if (status_reg & SYS_STATUS_RXFCG)
+	        {
+	            /* A frame has been received, copy it to our local buffer. */
+	            frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFL_MASK_1023;
+	            if (frame_len <= FRAME_LEN_MAX)
+	            {
+	                dwt_readrxdata(rx_buffer, frame_len, 0);
+	            }
 
-    	         /* Execute a delay between transmissions. */
-    	         sleep_ms(TX_DELAY_MS);
+	            /* Clear good RX frame event in the DW1000 status register. */
+	            dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG);
+	        }
+	        else
+	        {
+	            /* Clear RX error events in the DW1000 status register. */
+	            dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_ERR);
+	        }
+	    }
 
-    	         /* Increment the blink frame sequence number (modulo 256). */
-    	         tx_msg[BLINK_FRAME_SN_IDX]++;
-     }
 }
 
 #ifdef  USE_FULL_ASSERT
