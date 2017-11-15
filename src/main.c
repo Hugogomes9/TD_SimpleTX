@@ -34,7 +34,7 @@ SOFTWARE.
 #include "deca_regs.h"
 #include "sleep.h"
 #include "port.h"
-static uint8 tx_msg[] = {0xC5, 0, 'D', 'E', 'C', 'A', 'W', 'A', 'V', 'E', 0, 0};
+static uint8 tx_msg[] = {0xC5, 0, 'h', 'u', 'g', 'o', 'W', 'A', 'V', 'E', 0, 0};
 #define BLINK_FRAME_SN_IDX 1
 
 /* Inter-frame delay period, in milliseconds. */
@@ -69,7 +69,7 @@ int main(void)
 
      if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
      {
-    	 lcd_display_str("INIT FAILED");
+    	// lcd_display_str("INIT FAILED");
          while (1)
          	 { };
      }
