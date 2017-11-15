@@ -67,6 +67,17 @@ int main(void)
      spi_set_rate_low();
      uint32_t deviceID = dwt_readdevid();
 
+     if (dwt_initialise(DWT_LOADNONE) == DWT_ERROR)
+     {
+    	 lcd_display_str("INIT FAILED");
+         while (1)
+         	 { };
+     }
+     spi_set_rate_high();
+
+     /* Configure DW1000. See NOTE 3 below. */
+     dwt_configure(&config);
+
      while(1)
      {
     	 /* Write frame data to DW1000 and prepare transmission. See NOTE 4 below.*/
