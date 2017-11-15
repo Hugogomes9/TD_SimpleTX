@@ -1,0 +1,4 @@
+core_cm3.h:930:22:NVIC_EnableIRQ	16	static
+core_cm3.h:943:22:NVIC_DisableIRQ	16	static
+deca_mutex.c:51:17:decamutexon	16	static
+deca_mutex.c:76:6:decamutexoff	16	static
