@@ -1,2 +1,0 @@
-lcd.c:21:6:writetoLCD	32	static
-lcd.c:83:6:lcd_display_str	24	static
