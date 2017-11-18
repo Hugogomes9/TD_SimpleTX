@@ -1863,7 +1863,7 @@ LOAD c:/program files (x86)/atollic/truestudio for arm 8.0.0/armtools/bin/../lib
                 0x00000686       0x1d c:/program files (x86)/atollic/truestudio for arm 8.0.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv7-m/crtn.o
 OUTPUT(TD.elf elf32-littlearm)
 
-.debug_info     0x00000000    0x229b7
+.debug_info     0x00000000    0x229b8
  .debug_info    0x00000000      0xece Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.o
  .debug_info    0x00000ece     0x1463 Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.o
  .debug_info    0x00002331      0xe7c Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.o
@@ -1880,19 +1880,19 @@ OUTPUT(TD.elf elf32-littlearm)
  .debug_info    0x0000fd34      0xfc5 Middlewares\ST\STM32_USB_Device_Library\Core\Src\usbd_ioreq.o
  .debug_info    0x00010cf9     0x3748 Src\decadriver\deca_device.o
  .debug_info    0x00014441      0xad1 Src\decadriver\deca_params_init.o
- .debug_info    0x00014f12     0x1fb6 Src\main.o
- .debug_info    0x00016ec8      0xa10 Src\platform\deca_mutex.o
- .debug_info    0x000178d8      0x9bf Src\platform\deca_sleep.o
- .debug_info    0x00018297     0x10fb Src\platform\deca_spi.o
- .debug_info    0x00019392     0x1bb5 Src\platform\port.o
- .debug_info    0x0001af47     0x129f Src\stm32f1xx_hal_msp.o
- .debug_info    0x0001c1e6      0xe6b Src\stm32f1xx_it.o
- .debug_info    0x0001d051      0xc07 Src\system_stm32f1xx.o
- .debug_info    0x0001dc58      0xe80 Src\usb_device.o
- .debug_info    0x0001ead8     0x1090 Src\usbd_cdc_if.o
- .debug_info    0x0001fb68     0x205d Src\usbd_conf.o
- .debug_info    0x00021bc5      0xd71 Src\usbd_desc.o
- .debug_info    0x00022936       0x81 startup\startup_stm32f103xb.o
+ .debug_info    0x00014f12     0x1fb7 Src\main.o
+ .debug_info    0x00016ec9      0xa10 Src\platform\deca_mutex.o
+ .debug_info    0x000178d9      0x9bf Src\platform\deca_sleep.o
+ .debug_info    0x00018298     0x10fb Src\platform\deca_spi.o
+ .debug_info    0x00019393     0x1bb5 Src\platform\port.o
+ .debug_info    0x0001af48     0x129f Src\stm32f1xx_hal_msp.o
+ .debug_info    0x0001c1e7      0xe6b Src\stm32f1xx_it.o
+ .debug_info    0x0001d052      0xc07 Src\system_stm32f1xx.o
+ .debug_info    0x0001dc59      0xe80 Src\usb_device.o
+ .debug_info    0x0001ead9     0x1090 Src\usbd_cdc_if.o
+ .debug_info    0x0001fb69     0x205d Src\usbd_conf.o
+ .debug_info    0x00021bc6      0xd71 Src\usbd_desc.o
+ .debug_info    0x00022937       0x81 startup\startup_stm32f103xb.o
 
 .debug_abbrev   0x00000000     0x4a12
  .debug_abbrev  0x00000000      0x2c2 Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.o

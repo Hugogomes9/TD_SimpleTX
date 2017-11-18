@@ -21,11 +21,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
   8 .ARM.attributes 00000029  00000000  00000000  00020184  2**0
                   CONTENTS, READONLY
-  9 .debug_info   000229b7  00000000  00000000  000201ad  2**0
+  9 .debug_info   000229b8  00000000  00000000  000201ad  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_abbrev 00004a12  00000000  00000000  00042b64  2**0
+ 10 .debug_abbrev 00004a12  00000000  00000000  00042b65  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00007d9b  00000000  00000000  00047576  2**0
+ 11 .debug_loc    00007d9b  00000000  00000000  00047577  2**0
                   CONTENTS, READONLY, DEBUGGING
  12 .debug_aranges 00000e88  00000000  00000000  0004f318  2**3
                   CONTENTS, READONLY, DEBUGGING
@@ -8302,7 +8302,7 @@ void dwt_setxtaltrim(uint8 value)
  80032ac:	f8df a0e8 	ldr.w	sl, [pc, #232]	; 8003398 <main+0x2d8>
  80032b0:	e9ca 4500 	strd	r4, r5, [sl]
                 resp_tx_time = (poll_rx_ts + (POLL_RX_TO_RESP_TX_DLY_UUS * UUS_TO_DWT_TIME)) >> 8;
- 80032b4:	f114 74a5 	adds.w	r4, r4, #21626880	; 0x14a0000
+ 80032b4:	f114 74fa 	adds.w	r4, r4, #32768000	; 0x1f40000
  80032b8:	f145 0500 	adc.w	r5, r5, #0
  80032bc:	0a20      	lsrs	r0, r4, #8
                 dwt_setdelayedtrxtime(resp_tx_time);
