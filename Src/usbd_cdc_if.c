@@ -104,6 +104,16 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
+#define  MaxCommandsInBuffer 1 //max 10 commands can be received and saved without overwriting. Each command has a max size of APP_RX_DATA_SIZE
+
+static struct
+{
+    int pos_receive, pos_process; //pos_receive is the current position in buffer to save incoming data. pos_process is the index of data in buffer which has been processed.
+    //if pos_receive=pos_process, it means all data were processed, waiting for new data coming
+    unsigned char IsCommandDataReceived; //anynumber >0 means data were received. 0 means no data is available
+    uint8_t UserRxBufferFS[MaxCommandsInBuffer][APP_RX_DATA_SIZE];//it could save <MaxCommandsInBuffer> number of commands
+    uint8_t CommandsLens[MaxCommandsInBuffer]; //save the len of each command
+} s_RxBuffers;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -298,6 +308,40 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+
+/**
+  * @brief  VCP_retrieveInputData, defined by user
+  *         Call this function frequently to check if data is received.
+  *
+  *
+  *
+  * @param  Buf: Buffer of data to be received
+  * @param  Len: Number of data received (in bytes)
+  * @retval 0 means no data was received.
+  */
+
+int8_t VCP_retrieveInputData(uint8_t* Buf, uint32_t *Len)
+{
+	uint32_t receivedLength;
+    if(s_RxBuffers.IsCommandDataReceived==0)return 0; //no data received
+
+    int index=s_RxBuffers.pos_process;
+
+    receivedLength=s_RxBuffers.CommandsLens[index]; //return the length
+    if(*Len>receivedLength) *Len=receivedLength;
+    memcpy(Buf,s_RxBuffers.UserRxBufferFS[index],*Len);
+    Buf[*Len]='\0'; //testing only. make sure there is ending char in the returned command string
+
+    //check if all data were processed.
+    s_RxBuffers.pos_process++;
+    if(s_RxBuffers.pos_process>=MaxCommandsInBuffer) //reach the last buffer, need to rewind to 0
+    {
+        s_RxBuffers.pos_process=0;
+    }
+    if(s_RxBuffers.pos_process==s_RxBuffers.pos_receive)s_RxBuffers.IsCommandDataReceived=0; //check if all data were processed
+    return 1;
+}
+
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**

@@ -56,7 +56,7 @@
 #include "deca_device_api.h"
 #include "deca_regs.h"
 #include "sleep.h"
-
+#include "math.h"
 SPI_HandleTypeDef hspi1;
 
 void SystemClock_Config(void);
@@ -136,6 +136,19 @@ char dist_str[16] = {0};
 
 /* Declaration of static functions. */
 static void resp_msg_get_ts(uint8 *ts_field, uint32 *ts);
+int elevar( int b,int p){
+	int i=0;
+	int a=b;
+	if(p==0){
+		return 1;
+	}
+	else{
+		for(i=1;i<=p-1;i++){
+			b=b*a;
+		}
+	}
+	return b;
+}
 
 int main(void)
 {
@@ -145,10 +158,10 @@ int main(void)
 
   MX_GPIO_Init();
   MX_SPI1_Init();
-  //MX_USB_DEVICE_Init();
+  MX_USB_DEVICE_Init();
 
   setup_DW1000RSTnIRQ(0);
-  port_DisableEXT_IRQ();
+  //port_DisableEXT_IRQ();
   //dw_main();
   /* Start with board specific hardware init. */
      peripherals_init();
@@ -232,6 +245,7 @@ int main(void)
                  //clockOffsetRatio = dwt_readcarrierintegrator() * (FREQ_OFFSET_MULTIPLIER * HERTZ_TO_PPM_MULTIPLIER_CHAN_2 / 1.0e6) ;
                  clockOffsetRatio = 0;
 
+
                  /* Get timestamps embedded in response message. */
                  resp_msg_get_ts(&rx_buffer[RESP_MSG_POLL_RX_TS_IDX], &poll_rx_ts);
                  resp_msg_get_ts(&rx_buffer[RESP_MSG_RESP_TX_TS_IDX], &resp_tx_ts);
@@ -242,6 +256,18 @@ int main(void)
 
                  tof = ((rtd_init - rtd_resp * (1 - clockOffsetRatio)) / 2.0) * DWT_TIME_UNITS;
                  distance = tof * SPEED_OF_LIGHT;
+                 //uint8_t dist[15];
+                 //while(distance<elevar(10,15)){
+                	 //distance=distance*10;
+                 //}
+                 //int idistance = distance;
+                 //for(i=14;i>=0;i--){
+                	// dist[i]= (idistance/(elevar(10,14-i)))% 10;
+                // }
+                 //dist[0]=idistance/(elevar(10,14));
+                 uint8_t buffer[10];
+                 memcpy(buffer, (uint8_t*) &distance, sizeof(distance));
+                 CDC_Transmit_FS(buffer, sizeof(distance));
 
                  /* Display computed distance on LCD. */
                 // sprintf(dist_str, "DIST: %3.2f m", distance);
