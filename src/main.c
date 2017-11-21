@@ -60,9 +60,12 @@
 
 SPI_HandleTypeDef hspi1;
 
+UART_HandleTypeDef huart1;
+
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART1_UART_Init(void);
 
 extern void dw_main(void);
 
@@ -136,6 +139,7 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_USB_DEVICE_Init();
+  MX_USART1_UART_Init();
 
   setup_DW1000RSTnIRQ(0);
   //port_DisableEXT_IRQ();
@@ -166,6 +170,7 @@ int main(void)
   dwt_setrxantennadelay(RX_ANT_DLY);
   dwt_settxantennadelay(TX_ANT_DLY);
 
+  uint32_t timeStamp = 0;
   /* Loop forever responding to ranging requests. */
   while (1)
   {
@@ -173,9 +178,10 @@ int main(void)
       dwt_rxenable(DWT_START_RX_IMMEDIATE);
        /* Poll for reception of a frame or error/timeout. See NOTE 6 below. */
       while (!((status_reg = dwt_read32bitreg(SYS_STATUS_ID)) & (SYS_STATUS_RXFCG | SYS_STATUS_ALL_RX_ERR)))
-      { };
+      {}
       if (status_reg & SYS_STATUS_RXFCG)
       {
+    	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
           uint32 frame_len;
           /* Clear good RX frame event in the DW1000 status register. */
           dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG);
@@ -236,6 +242,42 @@ int main(void)
           /* Reset RX to properly reinitialise LDE operation. */
           dwt_rxreset();
       }
+	  uint8_t receiveData;
+      //if(USART_GetFlagStatus(USART1, USART_FLAG_RXNE)==SET){
+	  if(HAL_UART_Receive(&huart1, &receiveData, (uint16_t) 1, (uint32_t) 1)==0){
+    	  //uint8_t receiveData = USART_ReceiveData(USART1);
+    	  if(receiveData == 97){
+    		  timeStamp = HAL_GetTick();
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+    	  }
+    	  //  for(i=4500000; i>0; i--);
+    	  if(receiveData == 98){
+    		  timeStamp = HAL_GetTick();
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+    		  //for(i=4500000; i>0; i--);
+    	  }
+    	  if(receiveData == 99){
+    		  timeStamp = HAL_GetTick();
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+    		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
+    		  //for(i=4500000; i>0; i--);
+    	  }
+    	  //for(i=4500000; i>0; i--);
+      }
+	  if(HAL_GetTick() - timeStamp > 300){
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+	  }
   }
 }
 
@@ -363,6 +405,25 @@ static void MX_SPI1_Init(void)
 
 }
 
+/* USART1 init function */
+static void MX_USART1_UART_Init(void)
+{
+
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 9600;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
 /** Configure pins as 
         * Analog 
         * Input 
@@ -408,8 +469,10 @@ static void MX_GPIO_Init(void)
 	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	  /*Configure GPIO pin : PB0 */
-	  GPIO_InitStruct.Pin = GPIO_PIN_0;
+	  /*Configure GPIO pins : PB0 PB12 PB13 PB14
+	                             PB15 */
+	  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
+	                            |GPIO_PIN_15;
 	  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

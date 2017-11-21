@@ -1,3 +1,8 @@
-main.c:288:6:SystemClock_Config	88	static
-main.c:130:5:main	64	static
-main.c:441:6:_Error_Handler	0	static
+main.c:133:5:main	48	static
+main.c:294:15:get_rx_timestamp_u64	40	static
+main.c:319:13:resp_msg_set_ts	48	static
+main.c:330:6:SystemClock_Config	88	static
+main.c:385:13:MX_SPI1_Init	8	static
+main.c:409:13:MX_USART1_UART_Init	8	static
+main.c:434:13:MX_GPIO_Init	40	static
+main.c:504:6:_Error_Handler	16	static
