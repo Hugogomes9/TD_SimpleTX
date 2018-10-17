@@ -1,0 +1,10 @@
+instance.c:44:6:instanceconfigframeheader	16	static
+instance.c:64:6:instancerxon	40	static
+instance.c:78:5:instancesendpacket	24	static
+instance.c:104:5:testapprun	248	static
+instance.c:920:5:instance_init_s	24	static
+instance.c:946:6:instance_init_timings	40	static
+instance.c:1062:8:instance_get_addr	88	static
+instance.c:1078:8:instance_get_tagaddr	88	static
+instance.c:1094:8:instance_get_anchaddr	88	static
+instance.c:1108:6:instance_readaccumulatordata	4	static

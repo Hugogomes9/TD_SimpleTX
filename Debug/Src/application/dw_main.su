@@ -1,2 +1,2 @@
 dw_main.c:127:8:inittestapplication	16	static
-dw_main.c:185:5:dw_main	32	static
+dw_main.c:185:5:dw_main	80	static
